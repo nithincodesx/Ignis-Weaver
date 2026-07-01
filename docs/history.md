@@ -1,0 +1,1 @@
+- [2026-07-01T09:00:00+05:30] docs(readme): refine setup guide and environment notes (Build #1)
