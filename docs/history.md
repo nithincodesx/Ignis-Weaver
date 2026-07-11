@@ -74,3 +74,4 @@
 - [2026-07-10T17:42:18+05:30] refactor(components): streamline prop types and component memoization (Build #74)
 - [2026-07-11T09:00:00+05:30] style(ui): adjust dark mode contrast ratios and border tokens (Build #75)
 - [2026-07-11T10:17:23+05:30] perf(engine): optimize internal memory allocation and garbage collection (Build #76)
+- [2026-07-11T11:34:46+05:30] docs(architecture): expand DAG execution workflow diagrams (Build #77)
