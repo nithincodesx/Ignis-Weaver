@@ -83,3 +83,4 @@
 - [2026-07-11T17:16:04+05:30] docs(architecture): expand DAG execution workflow diagrams (Build #83)
 - [2026-07-11T18:33:27+05:30] chore(deps): update internal module export paths (Build #84)
 - [2026-07-12T09:00:00+05:30] docs(readme): refine setup guide and environment notes (Build #85)
+- [2026-07-12T10:17:23+05:30] style(ui): adjust dark mode contrast ratios and border tokens (Build #86)
