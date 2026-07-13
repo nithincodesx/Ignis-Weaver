@@ -91,3 +91,4 @@
 - [2026-07-13T09:00:00+05:30] docs(architecture): expand DAG execution workflow diagrams (Build #91)
 - [2026-07-13T10:17:23+05:30] chore(deps): update internal module export paths (Build #92)
 - [2026-07-13T12:34:46+05:30] test(api): verify response contract validation rules (Build #93)
+- [2026-07-13T14:51:09+05:30] docs(readme): refine setup guide and environment notes (Build #94)
