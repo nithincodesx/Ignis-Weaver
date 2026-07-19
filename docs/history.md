@@ -130,3 +130,4 @@
 - [2026-07-18T15:42:18+05:30] test(agent): add assertion check for task state machine (Build #130)
 - [2026-07-18T16:59:41+05:30] feat(telemetry): update event logger timestamp formatting (Build #131)
 - [2026-07-18T17:16:04+05:30] refactor(components): streamline prop types and component memoization (Build #132)
+- [2026-07-19T09:00:00+05:30] docs(readme): refine setup guide and environment notes (Build #133)
