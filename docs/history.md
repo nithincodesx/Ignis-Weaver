@@ -165,3 +165,4 @@
 - [2026-07-22T16:42:18+05:30] style(ui): adjust dark mode contrast ratios and border tokens (Build #165)
 - [2026-07-22T17:59:41+05:30] perf(engine): optimize internal memory allocation and garbage collection (Build #166)
 - [2026-07-23T09:00:00+05:30] test(api): verify response contract validation rules (Build #167)
+- [2026-07-23T10:17:23+05:30] docs(readme): refine setup guide and environment notes (Build #168)
