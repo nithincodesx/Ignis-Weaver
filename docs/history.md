@@ -217,3 +217,4 @@
 - [2026-07-29T15:42:18+05:30] docs(architecture): expand DAG execution workflow diagrams (Build #217)
 - [2026-07-29T16:59:41+05:30] chore(deps): update internal module export paths (Build #218)
 - [2026-07-29T17:16:04+05:30] test(api): verify response contract validation rules (Build #219)
+- [2026-07-30T09:00:00+05:30] test(agent): add assertion check for task state machine (Build #220)
