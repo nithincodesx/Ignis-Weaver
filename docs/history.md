@@ -233,3 +233,4 @@
 - [2026-07-31T16:25:55+05:30] style(theme): enhance button hover state animations and glow effects (Build #233)
 - [2026-07-31T17:42:18+05:30] docs(changelog): log daily build stability metrics (Build #234)
 - [2026-08-01T09:00:00+05:30] docs(architecture): expand DAG execution workflow diagrams (Build #235)
+- [2026-08-01T10:17:23+05:30] chore(deps): update internal module export paths (Build #236)
