@@ -242,3 +242,4 @@
 - [2026-08-01T17:59:41+05:30] chore(deps): update internal module export paths (Build #242)
 - [2026-08-02T09:00:00+05:30] style(ui): adjust dark mode contrast ratios and border tokens (Build #243)
 - [2026-08-02T10:17:23+05:30] perf(engine): optimize internal memory allocation and garbage collection (Build #244)
+- [2026-08-02T11:34:46+05:30] docs(architecture): expand DAG execution workflow diagrams (Build #245)
