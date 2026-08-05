@@ -261,3 +261,4 @@
 - [2026-08-04T16:25:55+05:30] refactor(types): optimize interface inheritance and nullability (Build #261)
 - [2026-08-04T17:42:18+05:30] test(agent): add assertion check for task state machine (Build #262)
 - [2026-08-05T09:00:00+05:30] test(api): verify response contract validation rules (Build #263)
+- [2026-08-05T10:17:23+05:30] docs(readme): refine setup guide and environment notes (Build #264)
