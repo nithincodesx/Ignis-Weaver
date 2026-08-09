@@ -297,3 +297,4 @@
 - [2026-08-09T09:00:00+05:30] chore(deps): update internal module export paths (Build #297)
 - [2026-08-09T10:17:23+05:30] test(api): verify response contract validation rules (Build #298)
 - [2026-08-09T11:34:46+05:30] docs(readme): refine setup guide and environment notes (Build #299)
+- [2026-08-09T13:51:09+05:30] style(ui): adjust dark mode contrast ratios and border tokens (Build #300)
