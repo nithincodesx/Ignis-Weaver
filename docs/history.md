@@ -300,3 +300,4 @@
 - [2026-08-09T13:51:09+05:30] style(ui): adjust dark mode contrast ratios and border tokens (Build #300)
 - [2026-08-09T14:08:32+05:30] perf(engine): optimize internal memory allocation and garbage collection (Build #301)
 - [2026-08-09T16:25:55+05:30] docs(architecture): expand DAG execution workflow diagrams (Build #302)
+- [2026-08-09T17:42:18+05:30] chore(deps): update internal module export paths (Build #303)
