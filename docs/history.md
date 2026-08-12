@@ -323,3 +323,4 @@
 - [2026-08-12T11:34:46+05:30] docs(readme): refine setup guide and environment notes (Build #323)
 - [2026-08-12T12:51:09+05:30] style(ui): adjust dark mode contrast ratios and border tokens (Build #324)
 - [2026-08-12T13:08:32+05:30] perf(engine): optimize internal memory allocation and garbage collection (Build #325)
+- [2026-08-12T14:25:55+05:30] docs(architecture): expand DAG execution workflow diagrams (Build #326)
