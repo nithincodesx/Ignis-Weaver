@@ -329,3 +329,4 @@
 - [2026-08-12T17:16:04+05:30] docs(readme): refine setup guide and environment notes (Build #329)
 - [2026-08-12T18:33:27+05:30] style(ui): adjust dark mode contrast ratios and border tokens (Build #330)
 - [2026-08-13T09:00:00+05:30] docs(architecture): expand DAG execution workflow diagrams (Build #331)
+- [2026-08-13T10:17:23+05:30] chore(deps): update internal module export paths (Build #332)
