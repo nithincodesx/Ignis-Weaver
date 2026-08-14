@@ -338,3 +338,4 @@
 - [2026-08-13T16:59:41+05:30] chore(deps): update internal module export paths (Build #338)
 - [2026-08-13T17:16:04+05:30] test(api): verify response contract validation rules (Build #339)
 - [2026-08-14T09:00:00+05:30] test(agent): add assertion check for task state machine (Build #340)
+- [2026-08-14T10:17:23+05:30] feat(telemetry): update event logger timestamp formatting (Build #341)
