@@ -395,3 +395,4 @@
 - [2026-08-20T16:59:41+05:30] feat(telemetry): update event logger timestamp formatting (Build #395)
 - [2026-08-20T17:16:04+05:30] refactor(components): streamline prop types and component memoization (Build #396)
 - [2026-08-21T09:00:00+05:30] docs(readme): refine setup guide and environment notes (Build #397)
+- [2026-08-21T10:17:23+05:30] style(ui): adjust dark mode contrast ratios and border tokens (Build #398)
