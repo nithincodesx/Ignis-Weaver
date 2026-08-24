@@ -150,6 +150,7 @@ export default function CommandConsole({ onDispatch }: CommandConsoleProps) {
 
           <button
             type="submit"
+            aria-label="Dispatch directive to active agent network"
             disabled={!prompt.trim() || isDispatched}
             className="flex items-center gap-2 px-5 py-2 mono-label font-bold text-xs border transition-all disabled:opacity-50"
             style={{
