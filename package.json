@@ -2,6 +2,10 @@
   "name": "enterprise-os",
   "version": "1.0.0",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nithincodesx/Ignis-Weaver.git"
+  },
   "scripts": {
     "dev": "next dev -p 3333",
     "build": "next build",
