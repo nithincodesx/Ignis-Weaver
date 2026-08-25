@@ -43,9 +43,12 @@ Coordinate specialized autonomous agents, each tailored with dedicated roles, to
 - System load metrics including CPU utilization, memory allocation, network I/O, and API latency.
 - Live updating charts and telemetry graphs for platform health monitoring.
 
-### 🌓 Cyberpunk / Neo-Brutalist Aesthetic & Theme System
-- Dual theme engine support (**Dark Mode** / **Light Mode**) with custom CSS variable tokens.
-- Monospaced typography, bracketed UI buttons, sharp borders, and smooth Framer Motion micro-interactions.
+### ⚙️ Comprehensive Settings & API Key Management Panel
+- **Multi-Provider API Credentials**: Configure OpenAI (`sk-...`), Anthropic (`sk-ant-...`), Google Gemini (`AIza...`), and Custom/Local LLM endpoints (Ollama / OpenRouter).
+- **Clipboard & Paste Support**: One-click clipboard pasting with visibility toggles (`Show/Hide Key`) and instant connection testing with live latency feedback.
+- **Agent Inference Hyperparameters**: Granular control over temperature sliders (`0.0` to `1.0`), max token output limits, concurrent task limits, and auto-retry rules.
+- **Workspace Integrations**: Connect GitHub PAT tokens, Slack Webhooks, and Vector Database endpoints (Qdrant, Pinecone, Weaviate).
+- **Persistence & Diagnostics**: Browser `localStorage` auto-persistence, config JSON export, and cache purging.
 
 ---
 
