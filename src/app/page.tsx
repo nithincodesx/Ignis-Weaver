@@ -9,6 +9,7 @@ import ActivityFeed from "@/components/AgentChat";
 import WorkflowView from "@/components/PromptStudio";
 import MetricsPanel from "@/components/OutputInspector";
 import CommandConsole from "@/components/CommandConsole";
+import SettingsPanel from "@/components/SettingsPanel";
 
 // ── Theme Toggle ─────────────────────────────────────────────────────────────
 function ThemeToggle({ dark, onToggle }: { dark: boolean; onToggle: () => void }) {
@@ -190,13 +191,7 @@ export default function GuildDashboard() {
       case "analytics":
         return <div style={{ height: "calc(100vh - 160px)" }}><MetricsPanel /></div>;
       case "settings":
-        return (
-          <div className="guild-card p-8 text-center">
-            <Shield size={36} style={{ margin: "0 auto 12px", color: "var(--text-muted)" }} />
-            <p className="mono-label" style={{ fontSize: 12 }}>SETTINGS MODULE</p>
-            <p className="text-xs mt-2" style={{ color: "var(--text-dim)" }}>Configuration panel — coming soon</p>
-          </div>
-        );
+        return <SettingsPanel />;
       default:
         return <StatsRow />;
     }
