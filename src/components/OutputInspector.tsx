@@ -10,7 +10,7 @@ interface Metric {
   value: string;
   change: string;
   changeType: "up" | "down" | "neutral";
-  icon: React.ComponentType<{ size?: number }>;
+  icon: React.ElementType;
   accentColor: string;
   sparkline: number[];
 }
@@ -35,7 +35,7 @@ const changeIcon = { up: TrendingUp, down: TrendingDown, neutral: Minus };
 const changeColor = { up:"#10D9B1", down:"#FF4D6A", neutral:"var(--text-muted)" };
 
 function Sparkline({ data, color }: { data: number[]; color: string }) {
-  const max = Math.max(...data);
+  const max = Math.max(...data, 1);
   return (
     <div className="flex items-end gap-[2px] h-7 mt-1.5">
       {data.map((v, i) => (
@@ -53,17 +53,8 @@ function Sparkline({ data, color }: { data: number[]; color: string }) {
 }
 
 export default function MetricsPanel() {
-  const [metrics, setMetrics] = useState<Metric[]>(METRICS);
+  const [metrics] = useState<Metric[]>(METRICS);
 
-  useEffect(() => {
-    const iv = setInterval(() => {
-      setMetrics(prev => prev.map(m => ({
-        ...m,
-        sparkline: [...m.sparkline.slice(1), Math.max(0.5, m.sparkline[m.sparkline.length-1] + (Math.random()*4-2))],
-      })));
-    }, 3000);
-    return () => clearInterval(iv);
-  }, []);
 
   return (
     <div className="guild-card flex flex-col h-full">

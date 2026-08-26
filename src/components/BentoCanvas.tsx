@@ -27,23 +27,9 @@ function generateAgents(): AgentNode[] {
 type FilterStatus = "all" | AgentStatus;
 
 export default function AgentGrid() {
-  const [agents, setAgents] = useState<AgentNode[]>(generateAgents());
+  const [agents] = useState<AgentNode[]>(generateAgents());
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<FilterStatus>("all");
-
-  // Live status simulation
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setAgents(prev => prev.map(agent => {
-        const rand = Math.random();
-        if (agent.status === "idle" && rand > 0.85) return { ...agent, status: "active" as AgentStatus };
-        if (agent.status === "active" && rand > 0.88) return { ...agent, efficiency: Math.min(agent.efficiency + (Math.random() * 3), 100) };
-        if (agent.status === "active" && agent.efficiency >= 100) return { ...agent, status: "completed" as AgentStatus };
-        return agent;
-      }));
-    }, 4500);
-    return () => clearInterval(interval);
-  }, []);
 
   const filtered = agents.filter(a => {
     const matchSearch = a.name.toLowerCase().includes(searchQuery.toLowerCase()) || a.subtitle.toLowerCase().includes(searchQuery.toLowerCase());

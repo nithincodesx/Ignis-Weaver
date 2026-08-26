@@ -65,29 +65,25 @@ export default function SettingsPanel() {
   };
 
   const testConnection = (provider: string) => {
-    setTestingConnection(provider);
-    setTimeout(() => {
-      setTestingConnection(null);
-      let isConfigured = false;
-      if (provider === "openai" && settings.openaiApiKey) isConfigured = true;
-      if (provider === "anthropic" && settings.anthropicApiKey) isConfigured = true;
-      if (provider === "gemini" && settings.geminiApiKey) isConfigured = true;
-      if (provider === "custom" && settings.customBaseUrl) isConfigured = true;
-      if (provider === "github" && settings.githubToken) isConfigured = true;
-      if (provider === "slack" && settings.slackWebhookUrl) isConfigured = true;
+    let isConfigured = false;
+    if (provider === "openai" && settings.openaiApiKey.trim()) isConfigured = true;
+    if (provider === "anthropic" && settings.anthropicApiKey.trim()) isConfigured = true;
+    if (provider === "gemini" && settings.geminiApiKey.trim()) isConfigured = true;
+    if (provider === "custom" && settings.customBaseUrl.trim()) isConfigured = true;
+    if (provider === "github" && settings.githubToken.trim()) isConfigured = true;
+    if (provider === "slack" && settings.slackWebhookUrl.trim()) isConfigured = true;
 
-      if (isConfigured || provider === "custom") {
-        setConnectionStatus((prev) => ({
-          ...prev,
-          [provider]: { status: "success", msg: `Connected successfully (24ms latency)` },
-        }));
-      } else {
-        setConnectionStatus((prev) => ({
-          ...prev,
-          [provider]: { status: "error", msg: `Missing API Key or Invalid Credentials` },
-        }));
-      }
-    }, 1200);
+    if (isConfigured) {
+      setConnectionStatus((prev) => ({
+        ...prev,
+        [provider]: { status: "success", msg: `Credential Stored — Verification API Endpoint Not Connected` },
+      }));
+    } else {
+      setConnectionStatus((prev) => ({
+        ...prev,
+        [provider]: { status: "error", msg: `Missing API Key or Credential Input` },
+      }));
+    }
   };
 
   return (

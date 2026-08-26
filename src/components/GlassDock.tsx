@@ -58,9 +58,10 @@ const NAV = [
 interface SidebarProps {
   activePanel: string;
   onPanelChange: (panel: string) => void;
+  onBrainClick?: () => void;
 }
 
-export default function Sidebar({ activePanel, onPanelChange }: SidebarProps) {
+export default function Sidebar({ activePanel, onPanelChange, onBrainClick }: SidebarProps) {
   return (
     <aside className="guild-sidebar flex flex-col justify-between items-center py-4 flex-shrink-0 min-h-screen" style={{ width: 72 }}>
       {/* Nav Items */}
@@ -90,8 +91,9 @@ export default function Sidebar({ activePanel, onPanelChange }: SidebarProps) {
       {/* Bottom brain button */}
       <div className="pb-2">
         <button
+          onClick={onBrainClick}
           aria-label="Guild AI"
-          className="w-10 h-10 flex items-center justify-center transition-colors"
+          className="w-10 h-10 flex items-center justify-center transition-colors hover:opacity-80"
           style={{ background:"var(--text)", color:"var(--card)" }}
         >
           <BrainIcon />

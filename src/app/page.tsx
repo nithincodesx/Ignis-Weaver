@@ -42,7 +42,7 @@ function ThemeToggle({ dark, onToggle }: { dark: boolean; onToggle: () => void }
 
 // ── KPI Badge ────────────────────────────────────────────────────────────────
 function KPI({ icon: Icon, label, value }: {
-  icon: React.ComponentType<{ size?: number }>;
+  icon: React.ElementType;
   label: string;
   value: string;
 }) {
@@ -133,6 +133,9 @@ export default function GuildDashboard() {
   const [darkMode, setDarkMode] = useState(false);
   const [activePanel, setActivePanel] = useState("dashboard");
   const [lastDispatchedTask, setLastDispatchedTask] = useState<string | null>(null);
+  const [topbarSearch, setTopbarSearch] = useState("");
+  const [showNotif, setShowNotif] = useState(false);
+  const [showHelpModal, setShowHelpModal] = useState(false);
 
   // Apply dark class to <html>
   useEffect(() => {
@@ -200,12 +203,16 @@ export default function GuildDashboard() {
   return (
     <div className="flex min-h-screen">
       {/* Sidebar */}
-      <Sidebar activePanel={activePanel} onPanelChange={setActivePanel} />
+      <Sidebar
+        activePanel={activePanel}
+        onPanelChange={setActivePanel}
+        onBrainClick={() => setShowHelpModal(prev => !prev)}
+      />
 
       {/* Main */}
       <div className="flex-1 flex flex-col" style={{ marginLeft: 0 }}>
         {/* Top Navigation Bar */}
-        <header className="guild-header flex items-center justify-between px-6 py-0 flex-shrink-0" style={{ height: 60 }}>
+        <header className="guild-header flex items-center justify-between px-6 py-0 flex-shrink-0 relative z-20" style={{ height: 60 }}>
           {/* Left: Logo */}
           <div className="flex items-center gap-2.5">
             <div className="guild-logo-box flex items-center justify-center px-2 py-1 text-xs font-black font-mono" style={{ color: "var(--border)" }}>
@@ -232,15 +239,60 @@ export default function GuildDashboard() {
             <LiveClock />
             <div className="relative hidden md:block">
               <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2" style={{ color: "var(--text-muted)" }} />
-              <input type="text" placeholder="SEARCH..." className="g-input pl-7 py-1.5 text-[11px] w-36" />
+              <input
+                type="text"
+                value={topbarSearch}
+                onChange={e => setTopbarSearch(e.target.value)}
+                placeholder="SEARCH..."
+                className="g-input pl-7 py-1.5 text-[11px] w-36"
+              />
             </div>
             <ThemeToggle dark={darkMode} onToggle={() => setDarkMode(d => !d)} />
-            <button className="relative p-2 border" style={{ background: "var(--card)", borderColor: "var(--border-dim)", color: "var(--text-dim)" }}>
-              <Bell size={14} />
-              <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full g-pulse" style={{ background: "#FF4D6A" }} />
-            </button>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setShowNotif(prev => !prev)}
+                className="relative p-2 border transition-colors hover:bg-white/10"
+                style={{ background: "var(--card)", borderColor: "var(--border-dim)", color: "var(--text-dim)" }}
+              >
+                <Bell size={14} />
+                <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full g-pulse" style={{ background: "#FF4D6A" }} />
+              </button>
+
+              {/* Notification Popover */}
+              {showNotif && (
+                <div className="absolute right-0 top-10 w-72 guild-card p-3 shadow-xl z-50 space-y-2 border" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
+                  <div className="flex items-center justify-between pb-1 border-b" style={{ borderColor: "var(--border-dim)" }}>
+                    <span className="mono-label text-xs" style={{ color: "var(--text)" }}>SYSTEM NOTIFICATIONS</span>
+                    <button onClick={() => setShowNotif(false)} className="mono-label text-[10px] text-gray-400">CLOSE</button>
+                  </div>
+                  {lastDispatchedTask ? (
+                    <div className="p-2 border text-[11px] font-mono text-emerald-400 bg-emerald-500/10 border-emerald-500/30">
+                      ⚡ {lastDispatchedTask}
+                    </div>
+                  ) : (
+                    <p className="text-[11px] mono-label text-gray-400 py-2 text-center">No new alert notifications</p>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </header>
+
+        {/* System Overview Help Modal */}
+        {showHelpModal && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <div className="guild-card p-5 max-w-md w-full space-y-3" style={{ background: "var(--card)" }}>
+              <div className="flex items-center justify-between pb-2 border-b" style={{ borderColor: "var(--border-dim)" }}>
+                <span className="font-bold text-xs mono-label" style={{ color: "var(--text)" }}>GUILD OS ARCHITECTURE INFO</span>
+                <button onClick={() => setShowHelpModal(false)} className="mono-label text-[10px] text-gray-400">CLOSE</button>
+              </div>
+              <p className="text-xs leading-relaxed" style={{ color: "var(--text-dim)" }}>
+                GUILD Enterprise OS is running in Deterministic Client Mode. Frontend controls, inputs, and tab navigation are active. Backend LLM & SSE streaming APIs are currently offline.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Section label bar */}
         <div className="flex items-center justify-between border-b px-6 py-2.5" style={{ background: "var(--surface)", borderColor: "var(--border-dim)" }}>
@@ -251,7 +303,12 @@ export default function GuildDashboard() {
               : activePanel === "analytics" ? "PLATFORM ANALYTICS"
               : "SETTINGS"}
           </h1>
-          {lastDispatchedTask && (
+          {topbarSearch && (
+            <span className="mono-label text-[10px] text-amber-400">
+              FILTER: &quot;{topbarSearch}&quot;
+            </span>
+          )}
+          {lastDispatchedTask && !topbarSearch && (
             <span className="mono-label text-[10px] text-emerald-500 animate-pulse">
               ⚡ {lastDispatchedTask}
             </span>

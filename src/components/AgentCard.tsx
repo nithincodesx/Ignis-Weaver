@@ -59,6 +59,7 @@ function GithubIcon(){ return <svg viewBox="0 0 24 24" width="13" height="13" fi
 export default function AgentCard({ agent, index }: AgentCardProps) {
   const config = ROLE_CONFIG[agent.role];
   const ringColor = RING_COLORS[agent.role] || "#10D9B1";
+  const [extraTeams, setExtraTeams] = useState<number>(0);
 
   return (
     <motion.div
@@ -122,7 +123,20 @@ export default function AgentCard({ agent, index }: AgentCardProps) {
               {t.icon}
             </div>
           ))}
-          <button className="w-6 h-6 flex items-center justify-center text-xs font-bold rounded-none" style={{ background: "var(--surface)", border: "1px solid var(--border-dim)", color: "var(--text-dim)" }}>+</button>
+          {Array.from({ length: extraTeams }).map((_, i) => (
+            <div key={i} className="w-6 h-6 flex items-center justify-center text-white text-xs rounded-none bg-emerald-600">
+              ★
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={() => setExtraTeams(prev => (prev < 3 ? prev + 1 : 0))}
+            title="Toggle team assignment"
+            className="w-6 h-6 flex items-center justify-center text-xs font-bold rounded-none transition-colors hover:bg-white/10"
+            style={{ background: "var(--surface)", border: "1px solid var(--border-dim)", color: "var(--text-dim)" }}
+          >
+            +
+          </button>
         </div>
       </div>
 
@@ -139,7 +153,7 @@ export default function AgentCard({ agent, index }: AgentCardProps) {
               {c.type === "github" && <GithubIcon />}
             </div>
           ))}
-          <span className="mono-label ml-1">+{Math.floor(Math.random() * 4) + 1}</span>
+          <span className="mono-label ml-1">+{config.connections.length}</span>
         </div>
       </div>
 

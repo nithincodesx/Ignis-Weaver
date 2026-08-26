@@ -1,0 +1,227 @@
+==================================================================================================
+ GUILD ENTERPRISE OS — ARCHITECTURE & INCOMPLETE BUILD CODEX MANUAL
+==================================================================================================
+ Target Repository: GUILD Enterprise OS (Ignis-Weaver)
+ Purpose: Complete Technical Architecture Overview, Incomplete Components Guide, & Developer Roadmap
+ File: codex
+ Created Date: 2026-08-29
+==================================================================================================
+
+--------------------------------------------------------------------------------------------------
+ SECTION 1: SYSTEM ARCHITECTURE & CORE DESIGN PATTERNS
+--------------------------------------------------------------------------------------------------
+
+1.1 OVERVIEW
+GUILD Enterprise OS is designed as a Neo-Brutalist, high-performance command center UI for multi-agent
+artificial intelligence orchestration. It provides real-time visualization of agent status, workflow step
+execution, telemetry analytics, task dispatching, and multi-provider settings management.
+
+1.2 TECH STACK & FRAMEWORK BOUNDARIES
+- Framework: Next.js 14 (App Router, Client-Side Rendering with "use client" directives)
+- Language: TypeScript 5.4+ (Strict typing enabled in tsconfig.json)
+- Styling & Layout: Tailwind CSS + Vanilla CSS Custom Tokens defined in src/app/globals.css
+- Animation Engine: Framer Motion 11.0 (Spring animations, Layout transitions, AnimatePresence)
+- Iconography: Lucide React (0.400.0)
+
+1.3 DIRECTORY & COMPONENT HIERARCHY
+src/
+├── app/
+│   ├── globals.css          [CSS Design Tokens: --surface, --card, --border, --accent, --text]
+│   ├── layout.tsx           [Root HTML structure and metadata]
+│   └── page.tsx             [GuildDashboard: Central state orchestrator and panel router]
+├── components/
+│   ├── GlassDock.tsx        [Sidebar navigation dock & active panel switcher]
+│   ├── CommandConsole.tsx   [Interactive task dispatch bar with auto-route & mode toggles]
+│   ├── BentoCanvas.tsx      [Agent roster grid container & filtering toolbar]
+│   ├── AgentCard.tsx        [Individual agent card node with efficiency gauges & status pills]
+│   ├── AgentChat.tsx        [Activity log, streaming agent output panel & user chat]
+│   ├── PromptStudio.tsx     [Workflow step progression visualizer with step control buttons]
+│   ├── OutputInspector.tsx  [Telemetry analytics panel: CPU, Memory, Network I/O, API Latency]
+│   ├── SettingsPanel.tsx    [Multi-tab settings container]
+│   ├── StatusPill.tsx       [Reusable status badge component]
+│   └── settings/            [15 modular settings tab components]
+│       ├── ApiKeysTab.tsx, OpenAiKeySection.tsx, AnthropicKeySection.tsx, GeminiKeySection.tsx, CustomLlmSection.tsx
+│       ├── AgentExecutionTab.tsx, SystemPreferencesTab.tsx, IntegrationsTab.tsx, HealthDiagnosticsTab.tsx
+│       └── VectorDbSection.tsx, GithubIntegrationSection.tsx, SlackAlertsSection.tsx, PrimaryProviderSelector.tsx
+└── lib/
+    ├── types.ts             [Core TypeScript interfaces: Agent, AgentStatus, ActivityLog, Task, WorkflowStep]
+    ├── settingsTypes.ts     [GuildSettings interface & default settings schema]
+    ├── settingsStorage.ts   [browser localStorage loader/saver helpers]
+    └── utils.ts             [Tailwind clsx / twMerge utility]
+
+1.4 DATA FLOW & STATE MANAGEMENT ARCHITECTURE
+- Primary State Container: GuildDashboard (src/app/page.tsx)
+  * activePanel: "dashboard" | "manage" | "workflows" | "analytics" | "settings"
+  * darkMode: boolean (applies/removes .dark class to root <html> element)
+  * lastDispatchedTask: string notification state
+- Sub-System State Storage:
+  * Settings storage (src/lib/settingsStorage.ts) syncs with localStorage key "guild_settings_v1".
+  * Sub-components manage transient local UI states (e.g. search queries, tab selections, key visibility).
+
+
+--------------------------------------------------------------------------------------------------
+ SECTION 2: INCOMPLETE BUILD & MOCKED INFRASTRUCTURE (GAPS ANALYSIS)
+--------------------------------------------------------------------------------------------------
+
+The frontend UI of GUILD Enterprise OS is highly polished, but the underlying system currently operates
+with SIMULATED / MOCKED data and client-side placeholders. To turn this into a production-grade multi-agent
+engine, the following 8 architectural gaps must be built out:
+
+--------------------------------------------------------------------------------------------------
+ GAP 1: DISPATCHED TASK PROCESSING & LLM ROUTER
+--------------------------------------------------------------------------------------------------
+File Affected: src/components/CommandConsole.tsx, src/app/page.tsx
+Current Implementation:
+- Submitting a prompt in CommandConsole triggers `onDispatch({ prompt, agent, mode })`.
+- `page.tsx` updates `lastDispatchedTask` with a local string banner notification.
+Missing Infrastructure:
+- No Next.js API Route (`/api/agent/dispatch`) to process the incoming prompt.
+- No Agent Router logic to dynamically parse task context and select the optimal agent node.
+- No execution bridge connecting user prompts to actual LLM providers (OpenAI, Anthropic, Gemini, Ollama).
+
+--------------------------------------------------------------------------------------------------
+ GAP 2: REAL-TIME AGENT STREAMING LOGS & WEBSOCKET ENGINE
+--------------------------------------------------------------------------------------------------
+File Affected: src/components/AgentChat.tsx
+Current Implementation:
+- Displays a static array of mock activity logs (e.g., "Paul initialized workflow step...", "Marco started interview transcript parsing...").
+- Form submission adds a dummy text object directly into React local state.
+Missing Infrastructure:
+- No Server-Sent Events (SSE) or WebSocket connection (e.g. Socket.io, ws, or WebStreams API).
+- No agent runtime backend emitting step-by-step reasoning tokens (Chain-of-Thought logs) to the frontend.
+
+--------------------------------------------------------------------------------------------------
+ GAP 3: LIVE AGENT LIFECYCLE & HEARTBEAT MONITORING
+--------------------------------------------------------------------------------------------------
+Files Affected: src/components/BentoCanvas.tsx, src/components/AgentCard.tsx, src/lib/types.ts
+Current Implementation:
+- Agents ("Paul", "Marco", "Viktor", "Alexis", "Sarah", "Elena") are hardcoded in `types.ts` with static metrics (e.g., efficiency, completed tasks).
+Missing Infrastructure:
+- No agent health registry or heartbeat endpoint (e.g., GET `/api/agents/status`).
+- No dynamic agent registration (adding custom agent nodes at runtime).
+- Agent status indicators ("active", "idle", "warning", "error") do not update based on real process health.
+
+--------------------------------------------------------------------------------------------------
+ GAP 4: DYNAMIC MULTI-STEP WORKFLOW ENGINE & DAG RUNNER
+--------------------------------------------------------------------------------------------------
+File Affected: src/components/PromptStudio.tsx
+Current Implementation:
+- Shows 4 static workflow steps ("Target Audience Analysis", "Market Trends", "Feature Breakdown", "Architecture Review").
+- Step status toggling and control buttons ("Play", "Pause", "Retry") only update local component React state.
+Missing Infrastructure:
+- No Directed Acyclic Graph (DAG) task engine (e.g., LangGraph, Temporal, or custom workflow state machine).
+- No persistent execution history store (database backend).
+- No payload passing between step 1 (Researcher) -> step 2 (Product Analyst) -> step 3 (Architect).
+
+--------------------------------------------------------------------------------------------------
+ GAP 5: SYSTEM TELEMETRY & OS HEALTH METRICS SERVER
+--------------------------------------------------------------------------------------------------
+File Affected: src/components/OutputInspector.tsx
+Current Implementation:
+- Uses client-side `setInterval` timers with `Math.random()` to generate telemetry numbers (CPU, Memory, Network, Latency).
+Missing Infrastructure:
+- No backend telemetry collector endpoint (`/api/telemetry`).
+- No integration with OS metrics (Node `os` module: `os.cpus()`, `os.freemem()`) or server monitoring tools (Prometheus / Datadog).
+
+--------------------------------------------------------------------------------------------------
+ GAP 6: BACKEND API KEY SECURITY & LLM PROXY LAYER
+--------------------------------------------------------------------------------------------------
+Files Affected: src/components/settings/*.tsx, src/lib/settingsStorage.ts
+Current Implementation:
+- API keys (OpenAI, Anthropic, Gemini, Custom LLM) are stored in plaintext inside browser `localStorage`.
+- Key validation button simulates connection checks with `setTimeout(..., 1000)`.
+Missing Infrastructure:
+- No server-side secret management or environment encryption (keys should never be exposed in plaintext on the client).
+- No verification API route (`/api/settings/verify-key`) that sends a light test ping to LLM provider APIs.
+
+--------------------------------------------------------------------------------------------------
+ GAP 7: VECTOR DATABASE & RETRIEVAL (RAG) CONNECTOR
+--------------------------------------------------------------------------------------------------
+File Affected: src/components/settings/VectorDbSection.tsx
+Current Implementation:
+- UI inputs exist for Pinecone, Qdrant, Weaviate endpoints and Index names.
+Missing Infrastructure:
+- No vector embedding pipeline (e.g. OpenAI text-embedding-3-small, Cohere, or local embeddings).
+- No vector store client connection logic (Pinecone SDK, @qdrant/js-client-rest, @weaviate/client).
+- No document chunking or context retrieval engine.
+
+--------------------------------------------------------------------------------------------------
+ GAP 8: WORKSPACE INTEGRATIONS & EXTERNAL WEBHOOKS
+--------------------------------------------------------------------------------------------------
+Files Affected: src/components/settings/GithubIntegrationSection.tsx, SlackAlertsSection.tsx
+Current Implementation:
+- UI forms collect GitHub PAT tokens, Slack Webhook URLs, and Notion API integration settings.
+Missing Infrastructure:
+- No Octokit / GitHub REST client to fetch repositories or push pull requests directly from agent outputs.
+- No Slack Webhook dispatcher to send automated alerts when an agent task fails or finishes.
+
+
+--------------------------------------------------------------------------------------------------
+ SECTION 3: STEP-BY-STEP DEVELOPMENT BLUEPRINT & IMPROVEMENT ROADMAP
+--------------------------------------------------------------------------------------------------
+
+To transform this repository into a complete, working enterprise multi-agent engine, follow this
+5-Phase Implementation Blueprint:
+
+PHASE 1: AGENT RUNNER & LLM PROXY API ROUTE
+1. Create `src/app/api/agent/dispatch/route.ts`:
+   - Accept JSON body `{ prompt: string, agentId: string, mode: string }`.
+   - Read provider API keys from server environment (`process.env`) or securely decrypted key store.
+   - Initialize appropriate LLM client (OpenAI SDK, `@anthropic-ai/sdk`, or `@google/generative-ai`).
+   - Execute completion call and return structured response.
+
+PHASE 2: REAL-TIME STREAMING & SERVER-SENT EVENTS (SSE)
+1. Create `src/app/api/agent/stream/route.ts`:
+   - Implement `ReadableStream` with Server-Sent Events headers (`Content-Type: text/event-stream`).
+   - Pipe reasoning chunks and status events to the client in real-time.
+2. Update `src/components/AgentChat.tsx`:
+   - Replace static array with `EventSource` connection to `/api/agent/stream`.
+   - Append live token chunks dynamically as agents think and execute steps.
+
+PHASE 3: WORKFLOW DAG & AGENT STATE MACHINE
+1. Define a robust workflow schema in `src/lib/types.ts`:
+   ```typescript
+   export interface WorkflowDAG {
+     id: string;
+     name: string;
+     nodes: {
+       id: string;
+       agentId: string;
+       promptTemplate: string;
+       dependsOn: string[]; // Node IDs required before execution
+     }[];
+   }
+   ```
+2. Implement workflow executor in `src/lib/workflowEngine.ts`:
+   - Handle sequential and parallel step execution.
+   - Maintain execution context (passing outputs of node A as inputs to node B).
+
+PHASE 4: REAL SYSTEM TELEMETRY & DIAGNOSTICS
+1. Create `src/app/api/metrics/route.ts`:
+   - Use Node.js native `os` module:
+     ```typescript
+     import os from "os";
+     export async function GET() {
+       const cpus = os.cpus();
+       const totalMem = os.totalmem();
+       const freeMem = os.freemem();
+       return Response.json({
+         cpuUsage: Math.round(((totalMem - freeMem) / totalMem) * 100),
+         memoryAllocatedMb: Math.round((totalMem - freeMem) / 1024 / 1024),
+         memoryTotalMb: Math.round(totalMem / 1024 / 1024),
+         uptimeSeconds: os.uptime(),
+       });
+     }
+     ```
+2. Connect `src/components/OutputInspector.tsx` to fetch from `/api/metrics` every 2000ms.
+
+PHASE 5: SECURE KEY PERSISTENCE & VECTOR RAG CONNECTOR
+1. Update `settingsStorage.ts`:
+   - Add server-side API `/api/settings` to handle key encryption (using `crypto` module AES-256-GCM).
+2. Build `src/lib/vectorStore.ts`:
+   - Integrate vector DB client (Qdrant / Pinecone / Weaviate).
+   - Implement `queryContext(query: string)` to attach relevant vector search context to agent prompts.
+
+==================================================================================================
+ END OF CODEX MANUAL — GUILD ENTERPRISE OS
+==================================================================================================

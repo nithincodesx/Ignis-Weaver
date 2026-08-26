@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { Workflow, WorkflowStep, WorkflowStepStatus, ROLE_CONFIG } from "@/lib/types";
 import { CheckCircle2, Circle, Loader2, XCircle, ChevronRight, Zap } from "lucide-react";
 
-const stepIcon: Record<WorkflowStepStatus, React.ComponentType<{ size?: number; className?: string }>> = {
+const stepIcon: Record<WorkflowStepStatus, React.ElementType> = {
   completed: CheckCircle2,
   active: Loader2,
   pending: Circle,
@@ -42,21 +42,26 @@ const INITIAL_WORKFLOWS: Workflow[] = [
   },
 ];
 
-function WorkflowStepNode({ step, isLast }: { step: WorkflowStep; isLast: boolean }) {
+function WorkflowStepNode({ step, isLast, onStepClick }: { step: WorkflowStep; isLast: boolean; onStepClick?: () => void }) {
   const Icon = stepIcon[step.status];
   const colors = stepColors[step.status];
   const agentName = ROLE_CONFIG[step.agent]?.subtitle ?? step.agent;
 
   return (
     <div className="flex items-center gap-2">
-      <div className="flex-1 min-w-0 flex items-center gap-2 px-3 py-2 border" style={{ borderColor: colors.border, background: colors.bg }}>
+      <button
+        onClick={onStepClick}
+        type="button"
+        className="flex-1 min-w-0 flex items-center gap-2 px-3 py-2 border text-left transition-colors hover:border-emerald-500/50"
+        style={{ borderColor: colors.border, background: colors.bg }}
+      >
         <Icon size={13} className={cn(step.status === "active" && "animate-spin")} style={{ color: colors.text, flexShrink:0 }} />
         <div className="flex-1 min-w-0">
           <p className="text-[11px] font-semibold font-mono truncate" style={{ color: step.status === "pending" ? "var(--text-muted)" : "var(--text)" }}>{step.label}</p>
           <p className="mono-label truncate">{agentName}</p>
         </div>
         {step.duration && <span className="mono-label flex-shrink-0">{step.duration}</span>}
-      </div>
+      </button>
       {!isLast && <ChevronRight size={12} style={{ color: step.status === "completed" ? "#10D9B1" : "var(--border-dim)", flexShrink:0 }} />}
     </div>
   );
@@ -65,20 +70,25 @@ function WorkflowStepNode({ step, isLast }: { step: WorkflowStep; isLast: boolea
 export default function WorkflowView() {
   const [workflows, setWorkflows] = useState<Workflow[]>(INITIAL_WORKFLOWS);
 
-  useEffect(() => {
-    const iv = setInterval(() => {
-      setWorkflows(prev => prev.map(wf => {
-        const activeIdx = wf.steps.findIndex(s => s.status === "active");
-        if (activeIdx === -1 || Math.random() > 0.65) return wf;
-        const newSteps = [...wf.steps];
-        newSteps[activeIdx] = { ...newSteps[activeIdx], status:"completed", duration:`${(2+Math.random()*10).toFixed(1)}s` };
-        if (activeIdx+1 < newSteps.length) newSteps[activeIdx+1] = { ...newSteps[activeIdx+1], status:"active", duration:"—" };
-        const done = newSteps.filter(s => s.status === "completed").length;
-        return { ...wf, steps:newSteps, progress:Math.round((done/newSteps.length)*100) };
-      }));
-    }, 4000);
-    return () => clearInterval(iv);
-  }, []);
+  const toggleStepStatus = (wfId: string, stepId: string) => {
+    setWorkflows(prev => prev.map(wf => {
+      if (wf.id !== wfId) return wf;
+      const updatedSteps = wf.steps.map(s => {
+        if (s.id !== stepId) return s;
+        const nextStatus: WorkflowStepStatus =
+          s.status === "pending" ? "active" :
+          s.status === "active" ? "completed" :
+          s.status === "completed" ? "failed" : "pending";
+        return { ...s, status: nextStatus, duration: nextStatus === "completed" ? "manual" : s.duration };
+      });
+      const doneCount = updatedSteps.filter(s => s.status === "completed").length;
+      return {
+        ...wf,
+        steps: updatedSteps,
+        progress: Math.round((doneCount / updatedSteps.length) * 100),
+      };
+    }));
+  };
 
   return (
     <div className="guild-card flex flex-col h-full">
@@ -86,6 +96,7 @@ export default function WorkflowView() {
       <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor:"var(--border-dim)" }}>
         <Zap size={13} style={{ color:"var(--accent)" }} />
         <span className="mono-label" style={{ color:"var(--text)", fontSize:11 }}>ACTIVE WORKFLOWS</span>
+        <span className="mono-label text-[9px] px-1.5 py-0.5 border border-amber-500/30 text-amber-400 bg-amber-500/10">DAG RUNNER OFFLINE</span>
         <span className="mono-label ml-auto">{workflows.length} PIPELINES</span>
       </div>
 
@@ -110,7 +121,12 @@ export default function WorkflowView() {
             {/* Steps */}
             <div className="space-y-1.5">
               {wf.steps.map((step, i) => (
-                <WorkflowStepNode key={step.id} step={step} isLast={i === wf.steps.length - 1} />
+                <WorkflowStepNode
+                  key={step.id}
+                  step={step}
+                  isLast={i === wf.steps.length - 1}
+                  onStepClick={() => toggleStepStatus(wf.id, step.id)}
+                />
               ))}
             </div>
           </motion.div>
