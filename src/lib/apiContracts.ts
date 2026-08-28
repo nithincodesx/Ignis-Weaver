@@ -104,25 +104,29 @@ export type AgentStatusResponse = ApiResponse<AgentStatusOverview>;
 // ── Endpoint 3: GET /api/metrics ───────────────────────────────────────────
 
 export interface SystemProcessMetrics {
-  cpuUsagePercent: number;
-  memoryAllocatedMb: number;
-  memoryTotalMb: number;
-  freeMemoryMb: number;
-  uptimeSeconds: number;
+  processUptimeSeconds: number;
+  systemUptimeSeconds: number;
+  processMemoryRssMb: number;
+  heapUsedMb: number;
+  totalSystemMemoryMb: number;
+  freeSystemMemoryMb: number;
+  cpuCount: number;
+  cpuModel: string;
+  cpuUsagePercent: number | null;
   taskQueueSize: number;
-  apiGatewayLatencyMs: number;
 }
 
 export interface PlatformMetricsData {
   tasksCompletedToday: number;
-  avgResponseLatencySec: number;
-  tokenUsageDisplay: string;
-  errorRatePercent: number;
+  avgResponseLatencySec: number | null;
+  tokenUsageDisplay: string | null;
+  errorRatePercent: number | null;
   system: SystemProcessMetrics;
   agentEfficiency: Array<{ name: string; val: number; color: string }>;
 }
 
 export type PlatformMetricsResponse = ApiResponse<PlatformMetricsData>;
+
 
 // ── Endpoint 4: POST /api/settings/verify-key ──────────────────────────────
 
