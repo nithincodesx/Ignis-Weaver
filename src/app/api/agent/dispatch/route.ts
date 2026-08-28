@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { AgentDispatchPayload, AgentDispatchResponse } from "@/lib/apiContracts";
 import { AGENT_ROLES, ROLE_CONFIG, AgentRole } from "@/lib/types";
+import {
+  updateAgentStatusOnDispatchStart,
+  updateAgentStatusOnDispatchSuccess,
+  updateAgentStatusOnDispatchFailure,
+} from "@/lib/agentRegistry";
 
 export async function POST(req: NextRequest) {
   const timestamp = new Date().toISOString();
+  const taskId = `task-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
 
   try {
     const body = (await req.json()) as Partial<AgentDispatchPayload & { agentId?: AgentRole }>;
@@ -52,6 +58,9 @@ export async function POST(req: NextRequest) {
 
     const agentInfo = ROLE_CONFIG[agentRole];
 
+    // Transition agent status to ACTIVE in server registry
+    updateAgentStatusOnDispatchStart(agentRole, taskId);
+
     // 4. Resolve provider and secret credentials (ONLY server-side from process.env or securely passed headers)
     const primaryProvider = (
       req.headers.get("x-primary-provider") ||
@@ -75,6 +84,7 @@ export async function POST(req: NextRequest) {
 
     // Handle Dry-Run Mode
     if (mode === "dry-run") {
+      updateAgentStatusOnDispatchSuccess(agentRole);
       const response: AgentDispatchResponse = {
         success: true,
         data: {
@@ -100,6 +110,7 @@ export async function POST(req: NextRequest) {
 
     // 5. Check if provider credentials exist
     if (!apiKey && selectedProvider !== "custom") {
+      updateAgentStatusOnDispatchFailure(agentRole);
       const errorResponse: AgentDispatchResponse = {
         success: false,
         error: {
@@ -209,6 +220,7 @@ export async function POST(req: NextRequest) {
         llmOutputText = json.choices?.[0]?.message?.content || "No output returned from custom endpoint.";
       }
     } catch (execErr) {
+      updateAgentStatusOnDispatchFailure(agentRole);
       const errorResponse: AgentDispatchResponse = {
         success: false,
         error: {
@@ -220,11 +232,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(errorResponse, { status: 502 });
     }
 
+    updateAgentStatusOnDispatchSuccess(agentRole);
     const completedAt = new Date().toISOString();
     const response: AgentDispatchResponse = {
       success: true,
       data: {
-        taskId: `task-${Date.now()}`,
+        taskId,
         prompt,
         agentRole,
         agentName: agentInfo.name,
@@ -255,3 +268,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(errorResponse, { status: 500 });
   }
 }
+

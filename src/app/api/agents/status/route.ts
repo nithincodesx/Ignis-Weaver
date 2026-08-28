@@ -1,40 +1,47 @@
 import { NextRequest, NextResponse } from "next/server";
 import { AgentStatusResponse, AgentStatusOverview, AgentExecutionState } from "@/lib/apiContracts";
-import { AGENT_ROLES, ROLE_CONFIG, AgentNode, AgentStatus } from "@/lib/types";
+import { ROLE_CONFIG, AgentNode, AgentStatus } from "@/lib/types";
+import { getAgentRegistry, formatLastActive } from "@/lib/agentRegistry";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   const timestamp = new Date().toISOString();
   const searchParams = req.nextUrl.searchParams;
   const statusFilter = searchParams.get("status") as AgentStatus | null;
 
-  const defaultStatuses: AgentStatus[] = ["active", "completed", "active", "idle", "active", "warning"];
+  const registryRecords = getAgentRegistry();
 
-  const agents: AgentNode[] = AGENT_ROLES.map((role, i) => ({
-    id: role,
-    role,
-    name: ROLE_CONFIG[role].name,
-    subtitle: ROLE_CONFIG[role].subtitle,
-    status: defaultStatuses[i % defaultStatuses.length],
-    efficiency: [92, 100, 87, 78, 85, 63][i],
-    tasksCompleted: [34, 28, 52, 19, 11, 41][i],
-    tasksTotal: [40, 28, 60, 25, 14, 50][i],
-    lastActive: ["0s", "2m", "0s", "12m", "0s", "5m"][i],
-    avatar: ROLE_CONFIG[role].avatar,
-    accentColor: ROLE_CONFIG[role].accentColor,
-    description: ROLE_CONFIG[role].description,
-  }));
+  const agents: AgentNode[] = registryRecords.map((rec) => {
+    const config = ROLE_CONFIG[rec.agentId];
+    return {
+      id: rec.agentId,
+      role: rec.agentId,
+      name: rec.name,
+      subtitle: rec.subtitle,
+      status: rec.status,
+      // Leave efficiency undefined if no real calculation data, rendering "N/A"
+      efficiency: 0,
+      tasksCompleted: rec.completedTasks,
+      tasksTotal: rec.completedTasks + rec.failureCount,
+      lastActive: formatLastActive(rec.lastHeartbeat),
+      avatar: config.avatar,
+      accentColor: config.accentColor,
+      description: config.description,
+    };
+  });
 
   const filteredAgents = statusFilter
     ? agents.filter((a) => a.status === statusFilter)
     : agents;
 
-  const executionStates: AgentExecutionState[] = agents.map((a) => ({
-    agentId: a.role,
-    status: a.status,
-    efficiencyPercent: a.efficiency,
-    activeThreads: a.status === "active" ? 1 : 0,
-    memoryUsageMb: Math.round(a.efficiency * 1.4),
-    lastHeartbeat: timestamp,
+  const executionStates: AgentExecutionState[] = registryRecords.map((rec) => ({
+    agentId: rec.agentId,
+    status: rec.status,
+    efficiencyPercent: 0,
+    activeThreads: rec.status === "active" ? 1 : 0,
+    memoryUsageMb: 0,
+    lastHeartbeat: rec.lastHeartbeat || timestamp,
   }));
 
   const overview: AgentStatusOverview = {
@@ -58,3 +65,4 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json(response, { status: 200 });
 }
+
