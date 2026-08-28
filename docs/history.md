@@ -450,3 +450,4 @@
 - [2026-08-27T16:59:41+05:30] docs(readme): refine setup guide and environment notes (Build #450)
 - [2026-08-27T17:16:04+05:30] style(ui): adjust dark mode contrast ratios and border tokens (Build #451)
 - [2026-08-28T09:00:00+05:30] refactor(components): streamline prop types and component memoization (Build #452)
+- [2026-08-28T10:17:23+05:30] style(theme): enhance button hover state animations and glow effects (Build #453)
