@@ -18,7 +18,19 @@ export function loadSettingsFromStorage(): AppSettings {
 export function saveSettingsToStorage(settings: AppSettings): boolean {
   if (typeof window === "undefined") return false;
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+    // Strip secrets from localStorage persistence to prevent plaintext exposure
+    const safeSettings: AppSettings = {
+      ...settings,
+      openaiApiKey: "",
+      anthropicApiKey: "",
+      geminiApiKey: "",
+      customApiKey: "",
+      githubToken: "",
+      slackWebhookUrl: "",
+      notionToken: "",
+      vectorDbApiKey: "",
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(safeSettings));
     return true;
   } catch (err) {
     console.error("Failed to save settings to localStorage:", err);
