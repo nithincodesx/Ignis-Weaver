@@ -95,7 +95,9 @@ export async function POST(req: NextRequest) {
         }
       } else if (provider === "custom") {
         const target = baseUrl ? `${baseUrl.replace(/\/$/, "")}/models` : "http://localhost:11434/v1/models";
-        const res = await fetch(target, { method: "GET" });
+        const headers: Record<string, string> = {};
+        if (rawKey) headers["Authorization"] = `Bearer ${rawKey}`;
+        const res = await fetch(target, { method: "GET", headers });
         if (res.ok) {
           isValid = true;
         } else {
