@@ -64,25 +64,64 @@ export default function SettingsPanel() {
     }
   };
 
-  const testConnection = (provider: string) => {
-    let isConfigured = false;
-    if (provider === "openai" && settings.openaiApiKey.trim()) isConfigured = true;
-    if (provider === "anthropic" && settings.anthropicApiKey.trim()) isConfigured = true;
-    if (provider === "gemini" && settings.geminiApiKey.trim()) isConfigured = true;
-    if (provider === "custom" && settings.customBaseUrl.trim()) isConfigured = true;
-    if (provider === "github" && settings.githubToken.trim()) isConfigured = true;
-    if (provider === "slack" && settings.slackWebhookUrl.trim()) isConfigured = true;
+  const testConnection = async (provider: string) => {
+    setTestingConnection(provider);
 
-    if (isConfigured) {
+    let keyOrToken = "";
+    let baseUrl = "";
+    if (provider === "openai") keyOrToken = settings.openaiApiKey;
+    else if (provider === "anthropic") keyOrToken = settings.anthropicApiKey;
+    else if (provider === "gemini") keyOrToken = settings.geminiApiKey;
+    else if (provider === "custom") {
+      keyOrToken = settings.customApiKey;
+      baseUrl = settings.customBaseUrl;
+    } else if (provider === "github") keyOrToken = settings.githubToken;
+    else if (provider === "slack") keyOrToken = settings.slackWebhookUrl;
+    else if (provider === "vector-db") keyOrToken = settings.vectorDbApiKey;
+
+    if (!keyOrToken.trim() && !baseUrl.trim() && provider !== "custom") {
+      setTestingConnection(null);
       setConnectionStatus((prev) => ({
         ...prev,
-        [provider]: { status: "success", msg: `Credential Stored — Verification API Endpoint Not Connected` },
+        [provider]: { status: "error", msg: "Not configured — Missing API Key or Token" },
       }));
-    } else {
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/settings/verify-key", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ provider, keyOrToken, baseUrl }),
+      });
+
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.data?.valid) {
+          setConnectionStatus((prev) => ({
+            ...prev,
+            [provider]: { status: "success", msg: `Connected — Verified (${json.data.latencyMs}ms)` },
+          }));
+        } else {
+          const errDesc = json.data?.message || json.error?.message || "Invalid credential";
+          setConnectionStatus((prev) => ({
+            ...prev,
+            [provider]: { status: "error", msg: `Invalid — ${errDesc}` },
+          }));
+        }
+      } else {
+        setConnectionStatus((prev) => ({
+          ...prev,
+          [provider]: { status: "error", msg: "Error — Server verification request failed" },
+        }));
+      }
+    } catch (err) {
       setConnectionStatus((prev) => ({
         ...prev,
-        [provider]: { status: "error", msg: `Missing API Key or Credential Input` },
+        [provider]: { status: "error", msg: "Error — Network connection failed" },
       }));
+    } finally {
+      setTestingConnection(null);
     }
   };
 
