@@ -2,143 +2,185 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { TrendingUp, TrendingDown, Minus, Zap, Clock, CheckCircle2, AlertTriangle, Activity, Cpu, Layers } from "lucide-react";
+import { PlatformMetricsData, PlatformMetricsResponse } from "@/lib/apiContracts";
+import { Activity, Cpu, Layers, CheckCircle2, Clock, Zap, AlertTriangle, Server, HardDrive } from "lucide-react";
 
-interface Metric {
-  id: string;
-  label: string;
-  value: string;
-  change: string;
-  changeType: "up" | "down" | "neutral";
-  icon: React.ElementType;
-  accentColor: string;
-  sparkline: number[];
-}
-
-const METRICS: Metric[] = [
-  { id:"m1", label:"Tasks Completed", value:"185", change:"+12", changeType:"up", icon:CheckCircle2, accentColor:"#10D9B1", sparkline:[4,7,5,8,6,9,11,8,12,10,14,12] },
-  { id:"m2", label:"Avg Response",    value:"1.8s",  change:"-0.4s", changeType:"up", icon:Clock, accentColor:"#5B8DEF", sparkline:[8,7,6,7,5,6,4,5,3,4,2,2] },
-  { id:"m3", label:"Token Usage",     value:"248K",  change:"+32K",  changeType:"neutral", icon:Zap, accentColor:"#FFB547", sparkline:[5,6,8,7,9,8,10,9,11,10,12,14] },
-  { id:"m4", label:"Error Rate",      value:"0.3%",  change:"-0.1%", changeType:"up", icon:AlertTriangle, accentColor:"#FF4D6A", sparkline:[6,5,4,5,3,4,3,2,3,2,1,1] },
-];
-
-const AGENT_PERF = [
-  { name:"PAUL",   val:96, color:"#10D9B1" },
-  { name:"MARCO",  val:92, color:"#5B8DEF" },
-  { name:"VIKTOR", val:87, color:"#8b5cf6" },
-  { name:"ALEXIS", val:78, color:"#f59e0b" },
-  { name:"SARAH",  val:85, color:"#ec4899" },
-  { name:"ELENA",  val:63, color:"#06b6d4" },
-];
-
-const changeIcon = { up: TrendingUp, down: TrendingDown, neutral: Minus };
-const changeColor = { up:"#10D9B1", down:"#FF4D6A", neutral:"var(--text-muted)" };
-
-function Sparkline({ data, color }: { data: number[]; color: string }) {
-  const max = Math.max(...data, 1);
-  return (
-    <div className="flex items-end gap-[2px] h-7 mt-1.5">
-      {data.map((v, i) => (
-        <motion.div
-          key={i}
-          initial={{ height: 0 }}
-          animate={{ height:`${(v/max)*100}%` }}
-          transition={{ delay: i * 0.03, duration: 0.4, ease:"easeOut" }}
-          className="spark-bar flex-1"
-          style={{ background: i === data.length - 1 ? color : `${color}45`, minWidth:2 }}
-        />
-      ))}
-    </div>
-  );
+function formatSec(sec: number): string {
+  if (sec < 60) return `${sec}s`;
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  if (m < 60) return `${m}m ${s}s`;
+  const h = Math.floor(m / 60);
+  const remM = m % 60;
+  return `${h}h ${remM}m`;
 }
 
 export default function MetricsPanel() {
-  const [metrics] = useState<Metric[]>(METRICS);
+  const [data, setData] = useState<PlatformMetricsData | null>(null);
+  const [loading, setLoading] = useState(true);
 
+  const fetchMetrics = async () => {
+    try {
+      const res = await fetch("/api/metrics", { cache: "no-store" });
+      if (res.ok) {
+        const json = (await res.json()) as PlatformMetricsResponse;
+        if (json.success && json.data) {
+          setData(json.data);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch server metrics:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMetrics();
+    const interval = setInterval(fetchMetrics, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const sys = data?.system;
 
   return (
     <div className="guild-card flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor:"var(--border-dim)" }}>
-        <Activity size={13} style={{ color:"var(--accent)" }} />
-        <span className="mono-label" style={{ color:"var(--text)", fontSize:11 }}>PERFORMANCE METRICS</span>
+      <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: "var(--border-dim)" }}>
+        <div className="flex items-center gap-2">
+          <Activity size={13} style={{ color: "var(--accent)" }} />
+          <span className="mono-label" style={{ color: "var(--text)", fontSize: 11 }}>SERVER TELEMETRY METRICS</span>
+        </div>
+        <span className="mono-label text-[9px] text-emerald-400">REALTIME POLLED</span>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-5">
-        {/* KPI cards 2x2 */}
+        {loading && !data && (
+          <div className="py-8 text-center text-xs font-mono text-gray-500">Measuring system process metrics...</div>
+        )}
+
+        {/* Real KPI Cards */}
         <div className="grid grid-cols-2 gap-3">
-          {metrics.map((m, i) => {
-            const CIcon = changeIcon[m.changeType];
-            const MIcon = m.icon;
-            return (
-              <motion.div
-                key={m.id}
-                initial={{ opacity:0, y:8 }}
-                animate={{ opacity:1, y:0 }}
-                transition={{ delay:i*0.06 }}
-                className="p-3 border"
-                style={{ background:"var(--surface)", borderColor:"var(--border-dim)" }}
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <MIcon size={13} style={{ color: m.accentColor }} />
-                  <span className="mono-label flex items-center gap-0.5" style={{ color:changeColor[m.changeType] }}>
-                    <CIcon size={9} />
-                    {m.change}
-                  </span>
-                </div>
-                <p className="text-lg font-bold" style={{ color:"var(--text)" }}>{m.value}</p>
-                <p className="mono-label">{m.label}</p>
-                <Sparkline data={m.sparkline} color={m.accentColor} />
-              </motion.div>
-            );
-          })}
+          {/* KPI 1: Tasks Completed */}
+          <div className="p-3 border" style={{ background: "var(--surface)", borderColor: "var(--border-dim)" }}>
+            <div className="flex items-center justify-between mb-1">
+              <CheckCircle2 size={13} style={{ color: "#10D9B1" }} />
+              <span className="mono-label text-[9px] text-emerald-400">LIVE</span>
+            </div>
+            <p className="text-lg font-bold" style={{ color: "var(--text)" }}>
+              {data ? data.tasksCompletedToday : 0}
+            </p>
+            <p className="mono-label text-[10px]">TASKS COMPLETED</p>
+          </div>
+
+          {/* KPI 2: Avg Response Latency */}
+          <div className="p-3 border" style={{ background: "var(--surface)", borderColor: "var(--border-dim)" }}>
+            <div className="flex items-center justify-between mb-1">
+              <Clock size={13} style={{ color: "#5B8DEF" }} />
+              <span className="mono-label text-[9px] text-gray-500">TELEMETRY</span>
+            </div>
+            <p className="text-lg font-bold" style={{ color: "var(--text)" }}>
+              {data && data.avgResponseLatencySec !== null ? `${data.avgResponseLatencySec}s` : "N/A"}
+            </p>
+            <p className="mono-label text-[10px]">AVG RESPONSE LATENCY</p>
+          </div>
+
+          {/* KPI 3: Token Usage */}
+          <div className="p-3 border" style={{ background: "var(--surface)", borderColor: "var(--border-dim)" }}>
+            <div className="flex items-center justify-between mb-1">
+              <Zap size={13} style={{ color: "#FFB547" }} />
+              <span className="mono-label text-[9px] text-gray-500">TELEMETRY</span>
+            </div>
+            <p className="text-lg font-bold" style={{ color: "var(--text)" }}>
+              {data && data.tokenUsageDisplay !== null ? data.tokenUsageDisplay : "N/A"}
+            </p>
+            <p className="mono-label text-[10px]">TOKEN USAGE</p>
+          </div>
+
+          {/* KPI 4: Error Rate */}
+          <div className="p-3 border" style={{ background: "var(--surface)", borderColor: "var(--border-dim)" }}>
+            <div className="flex items-center justify-between mb-1">
+              <AlertTriangle size={13} style={{ color: "#FF4D6A" }} />
+              <span className="mono-label text-[9px] text-gray-500">STATUS</span>
+            </div>
+            <p className="text-lg font-bold" style={{ color: "var(--text)" }}>
+              {data && data.errorRatePercent !== null ? `${data.errorRatePercent}%` : "N/A"}
+            </p>
+            <p className="mono-label text-[10px]">ERROR RATE</p>
+          </div>
         </div>
 
-        {/* Agent efficiency bars */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-1.5">
-            <Layers size={11} style={{ color:"var(--text-muted)" }} />
-            <span className="mono-label" style={{ fontSize:10 }}>AGENT EFFICIENCY</span>
+        {/* System Process Runtime Metrics */}
+        <div className="p-3 border space-y-3" style={{ background: "var(--surface)", borderColor: "var(--border-dim)" }}>
+          <div className="flex items-center justify-between border-b pb-2" style={{ borderColor: "var(--border-dim)" }}>
+            <div className="flex items-center gap-1.5">
+              <Server size={12} style={{ color: "var(--accent)" }} />
+              <span className="mono-label font-bold text-xs" style={{ color: "var(--text)" }}>SYSTEM PROCESS TELEMETRY</span>
+            </div>
+            <span className="mono-label text-[9px] text-gray-400">NODE RUNTIME</span>
           </div>
-          {AGENT_PERF.map((a, i) => (
-            <motion.div
-              key={a.name}
-              initial={{ opacity:0, x:-8 }}
-              animate={{ opacity:1, x:0 }}
-              transition={{ delay:0.3 + i*0.05 }}
-              className="flex items-center gap-3"
-            >
-              <span className="mono-label w-14 truncate" style={{ color:"var(--text)" }}>{a.name}</span>
-              <div className="flex-1 h-[5px]" style={{ background:"var(--border-dim)" }}>
-                <motion.div
-                  className="h-full"
-                  style={{ background:a.color }}
-                  initial={{ width:0 }}
-                  animate={{ width:`${a.val}%` }}
-                  transition={{ delay:0.4+i*0.05, duration:0.6, ease:"easeOut" }}
-                />
-              </div>
-              <span className="mono-label w-8 text-right">{a.val}%</span>
-            </motion.div>
-          ))}
+
+          <div className="grid grid-cols-2 gap-2 text-[11px] font-mono">
+            <div className="p-2 border" style={{ borderColor: "var(--border-dim)" }}>
+              <span className="mono-label text-[9px] text-gray-400 block">PROCESS UPTIME</span>
+              <span className="font-bold text-emerald-400">
+                {sys ? formatSec(sys.processUptimeSeconds) : "N/A"}
+              </span>
+            </div>
+
+            <div className="p-2 border" style={{ borderColor: "var(--border-dim)" }}>
+              <span className="mono-label text-[9px] text-gray-400 block">SYSTEM UPTIME</span>
+              <span className="font-bold text-blue-400">
+                {sys ? formatSec(sys.systemUptimeSeconds) : "N/A"}
+              </span>
+            </div>
+
+            <div className="p-2 border" style={{ borderColor: "var(--border-dim)" }}>
+              <span className="mono-label text-[9px] text-gray-400 block">PROCESS MEMORY (RSS)</span>
+              <span className="font-bold text-purple-400">
+                {sys ? `${sys.processMemoryRssMb} MB` : "N/A"}
+              </span>
+            </div>
+
+            <div className="p-2 border" style={{ borderColor: "var(--border-dim)" }}>
+              <span className="mono-label text-[9px] text-gray-400 block">HEAP MEMORY USED</span>
+              <span className="font-bold text-amber-400">
+                {sys ? `${sys.heapUsedMb} MB` : "N/A"}
+              </span>
+            </div>
+
+            <div className="p-2 border" style={{ borderColor: "var(--border-dim)" }}>
+              <span className="mono-label text-[9px] text-gray-400 block">FREE SYSTEM MEMORY</span>
+              <span className="font-bold text-cyan-400">
+                {sys ? `${(sys.freeSystemMemoryMb / 1024).toFixed(1)} GB / ${(sys.totalSystemMemoryMb / 1024).toFixed(1)} GB` : "N/A"}
+              </span>
+            </div>
+
+            <div className="p-2 border" style={{ borderColor: "var(--border-dim)" }}>
+              <span className="mono-label text-[9px] text-gray-400 block">CPU CORES / MODEL</span>
+              <span className="font-bold text-gray-200">
+                {sys ? `${sys.cpuCount} Cores` : "N/A"}
+              </span>
+            </div>
+          </div>
         </div>
 
-        {/* System status */}
-        <div className="p-3 border" style={{ background:"var(--surface)", borderColor:"var(--border-dim)" }}>
-          <div className="flex items-center gap-1.5 mb-2.5">
-            <Cpu size={11} style={{ color:"var(--accent)" }} />
-            <span className="mono-label" style={{ fontSize:10 }}>SYSTEM STATUS</span>
+        {/* Agent Efficiency Status */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <Layers size={11} style={{ color: "var(--text-muted)" }} />
+              <span className="mono-label" style={{ fontSize: 10 }}>BENCHMARK EFFICIENCY</span>
+            </div>
+            <span className="mono-label text-[9px] text-gray-500">STANDBY (N/A)</span>
           </div>
-          <div className="grid grid-cols-3 gap-2">
-            {[{ l:"Uptime", v:"99.97%" }, { l:"Memory", v:"67.3%" }, { l:"Queue", v:"3 tasks" }].map(s => (
-              <div key={s.l} className="text-center">
-                <p className="text-sm font-bold" style={{ color:"var(--text)" }}>{s.v}</p>
-                <p className="mono-label">{s.l}</p>
-              </div>
-            ))}
+
+          <div className="p-3 border text-center text-xs font-mono text-gray-500" style={{ background: "var(--surface)", borderColor: "var(--border-dim)" }}>
+            Efficiency benchmarking will calculate dynamically upon completing benchmark task suites.
           </div>
         </div>
       </div>
     </div>
   );
 }
+
