@@ -61,6 +61,8 @@ export default function AgentCard({ agent, index }: AgentCardProps) {
   const ringColor = RING_COLORS[agent.role] || "#10D9B1";
   const [extraTeams, setExtraTeams] = useState<number>(0);
 
+  const hasEff = typeof agent.efficiency === "number" && agent.efficiency > 0;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 14 }}
@@ -87,9 +89,9 @@ export default function AgentCard({ agent, index }: AgentCardProps) {
         <div className="relative border-l overflow-hidden" style={{ borderColor: "var(--border-dim)", minHeight: 110 }}>
           {/* Efficiency ring overlay */}
           <div className="absolute top-2 right-2 z-10">
-            <ProgressRing progress={agent.efficiency} size={40} stroke={2} color={ringColor} />
+            <ProgressRing progress={hasEff ? agent.efficiency : 0} size={40} stroke={2} color={hasEff ? ringColor : "var(--border-dim)"} />
             <span className="absolute inset-0 flex items-center justify-center text-[9px] font-mono font-bold" style={{ color: "var(--text)" }}>
-              {Math.round(agent.efficiency)}%
+              {hasEff ? `${Math.round(agent.efficiency)}%` : "N/A"}
             </span>
           </div>
           <Image
@@ -105,7 +107,9 @@ export default function AgentCard({ agent, index }: AgentCardProps) {
       {/* Status + Last active */}
       <div className="flex items-center justify-between px-4 py-2.5 border-t border-b" style={{ borderColor: "var(--border-dim)" }}>
         <StatusPill status={agent.status} size="sm" />
-        <span className="mono-label">{agent.lastActive} ago</span>
+        <span className="mono-label">
+          {agent.lastActive && agent.lastActive !== "N/A" ? `${agent.lastActive} ago` : "N/A"}
+        </span>
       </div>
 
       {/* Description */}
@@ -162,7 +166,7 @@ export default function AgentCard({ agent, index }: AgentCardProps) {
         {[
           { label: "Done", val: agent.tasksCompleted },
           { label: "Total", val: agent.tasksTotal },
-          { label: "Eff.", val: `${Math.round(agent.efficiency)}%` },
+          { label: "Eff.", val: hasEff ? `${Math.round(agent.efficiency)}%` : "N/A" },
         ].map((s, i) => (
           <div key={s.label} className={cn("py-2.5 flex flex-col items-center", i < 2 && "border-r")} style={{ borderColor: "var(--border-dim)" }}>
             <span className="text-sm font-bold" style={{ color: "var(--text)" }}>{s.val}</span>

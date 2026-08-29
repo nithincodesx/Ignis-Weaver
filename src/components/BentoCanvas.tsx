@@ -3,21 +3,21 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { AgentNode, AGENT_ROLES, ROLE_CONFIG, AgentStatus } from "@/lib/types";
+import { AgentStatusResponse } from "@/lib/apiContracts";
 import AgentCard from "./AgentCard";
-import { Search, SlidersHorizontal } from "lucide-react";
+import { Search } from "lucide-react";
 
-function generateAgents(): AgentNode[] {
-  const statuses: AgentStatus[] = ["active", "completed", "active", "idle", "active", "warning"];
-  return AGENT_ROLES.map((role, i) => ({
+function getInitialAgentNodes(): AgentNode[] {
+  return AGENT_ROLES.map((role) => ({
     id: role,
     role,
     name: ROLE_CONFIG[role].name,
     subtitle: ROLE_CONFIG[role].subtitle,
-    status: statuses[i % statuses.length],
-    efficiency: [92, 100, 87, 78, 85, 63][i],
-    tasksCompleted: [34, 28, 52, 19, 11, 41][i],
-    tasksTotal: [40, 28, 60, 25, 14, 50][i],
-    lastActive: ["0s", "2m", "0s", "12m", "0s", "5m"][i],
+    status: "idle" as AgentStatus,
+    efficiency: 0,
+    tasksCompleted: 0,
+    tasksTotal: 0,
+    lastActive: "N/A",
     avatar: ROLE_CONFIG[role].avatar,
     accentColor: ROLE_CONFIG[role].accentColor,
     description: ROLE_CONFIG[role].description,
@@ -27,9 +27,29 @@ function generateAgents(): AgentNode[] {
 type FilterStatus = "all" | AgentStatus;
 
 export default function AgentGrid() {
-  const [agents] = useState<AgentNode[]>(generateAgents());
+  const [agents, setAgents] = useState<AgentNode[]>(getInitialAgentNodes());
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<FilterStatus>("all");
+
+  const fetchAgentStatus = async () => {
+    try {
+      const res = await fetch("/api/agents/status", { cache: "no-store" });
+      if (res.ok) {
+        const json = (await res.json()) as AgentStatusResponse;
+        if (json.success && json.data?.agents) {
+          setAgents(json.data.agents);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch agent status from backend API:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchAgentStatus();
+    const interval = setInterval(fetchAgentStatus, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
   const filtered = agents.filter(a => {
     const matchSearch = a.name.toLowerCase().includes(searchQuery.toLowerCase()) || a.subtitle.toLowerCase().includes(searchQuery.toLowerCase());
@@ -87,3 +107,4 @@ export default function AgentGrid() {
     </div>
   );
 }
+
